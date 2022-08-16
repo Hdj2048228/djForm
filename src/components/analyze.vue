@@ -2,7 +2,7 @@
   <div>
     <Row>
       <Tabs type="card" @on-click="selectTabsChange">
-        <TabPane label="反馈列表">
+        <TabPane label="反馈列表(模拟用户所填信息的反馈列表，数据需要后端支持，现在模拟实现)">
           <Card>
             <Row>
               <Table ref="scaleManage" :columns="cloumns" :data="scaleList" :loading="loading"
@@ -14,7 +14,7 @@
             </Row>
           </Card>
         </TabPane>
-        <TabPane label="统计视图" >
+        <TabPane label="统计视图(需要统计单个表单各用户的数据)" >
           <form-analyze ref="analyze" :data="analyzedData"></form-analyze>
         </TabPane>
       </Tabs>
@@ -43,147 +43,149 @@
 </template>
 
 <script>
-  import html2canvas from 'html2canvas';
-  import FormAnalyze from './form/analysis/index';
-  import FormFeedbackDetail from './form/result/index';
-  import {AnalyseResult} from './form/Model/Analyze';
+import html2canvas from 'html2canvas'
+import FormAnalyze from './form/analysis/index'
+import FormFeedbackDetail from './form/result/index'
+import {AnalyseResult} from './form/Model/Analyze'
 
-  export default {
-    name: 'scale-manage',
-    components: {
-      FormAnalyze,
-      FormFeedbackDetail
-    },
-    data () {
-      return {
-        scaleName: '',
-        category: {name: ''},
-        selectCategory: {},
-        pageNumber: 0,
-        totalSize: 0,
-        analyzedData: {},
-        selectScales: [],
-        addScaleTypeModal: false,
-        selectScale: {},
-        scaleList: [{id: '01', name: '程序员满意度问卷', time: '2017-09-10'}, {id: '01', name: '程序员满意度问卷', time: '2017-09-10'}],
-        cloumns: [
-          {
-            title: '序号',
-            type: 'index',
-            align: 'center'
-          },
-          {
-            title: '序号',
-            key: 'name',
-            align: 'center'
-          },
-          {
-            title: '提交时间',
-            key: 'time',
-            align: 'center'
-          },
-          {
-            title: '其他信息',
-            key: 'other',
-            align: 'center'
-          },
-          {
-            title: '操作',
-            key: 'other',
-            align: 'center',
-            render: (h, obj) => {
-              // const id = obj.row.id;
-              return h('Button',
-                {
-                  props: {type: 'primary', size: 'small'},
-                  on: {
-                    click: (event) => {
-                      this.showAnalyzeView(obj.row);
-                      event.stopPropagation();
-                    }
+export default {
+  name: 'scale-manage',
+  components: {
+    FormAnalyze,
+    FormFeedbackDetail
+  },
+  data () {
+    return {
+      scaleName: '',
+      category: {name: ''},
+      selectCategory: {},
+      pageNumber: 0,
+      totalSize: 0,
+      analyzedData: {},
+      selectScales: [],
+      addScaleTypeModal: false,
+      selectScale: {},
+      scaleList: [{id: '01', name: '程序员满意度问卷', time: '2022-08-10'}, {id: '01', name: '程序员满意度问卷', time: '2022-08-10'}],
+      cloumns: [
+        {
+          title: '序号',
+          type: 'index',
+          align: 'center'
+        },
+        {
+          title: '序号',
+          key: 'name',
+          align: 'center'
+        },
+        {
+          title: '提交时间',
+          key: 'time',
+          align: 'center'
+        },
+        {
+          title: '其他信息',
+          key: 'other',
+          align: 'center'
+        },
+        {
+          title: '操作',
+          key: 'other',
+          align: 'center',
+          render: (h, obj) => {
+            // const id = obj.row.id;
+            return h('Button',
+              {
+                props: {type: 'primary', size: 'small'},
+                on: {
+                  click: (event) => {
+                    this.showAnalyzeView(obj.row)
+                    event.stopPropagation()
                   }
-                }, '查看');
-            }
+                }
+              }, '查看')
           }
-        ],
-        loading: false
-      };
-    },
-    methods: {
-      dbClick (data) {
-        this.showAnalyzeView(data);
-      },
-      showAnalyzeView (data) {
-        this.selectScale = data;
-      },
-      exportToImage () {
-        const vm = this;
-        html2canvas(document.querySelector('#capture', {
-          allowTaint: true,
-          useCORS: true
-        })).then(canvas => {
-          const url = canvas.toDataURL();
-          document.getElementById('exportedImage').src = url;
-          let a = document.createElement('a');
-          a.href = url;
-          a.download = vm.imageName ? vm.imageName : '未命名';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        });
-      },
-      printFeedbackDetail () {
-        const printHtml = document.getElementById('form-feedback-detail').innerHTML;
-        const wind = window.open('/index.html#/print', 'newwindow', 'toolbar=no, menubar=no, scrollbars=no, resizable=no,location=no, status=no');
-        setTimeout(() => {
-          wind.document.body.innerHTML = printHtml;
-          wind.print();
-        }, 300);
-        return false;
-      },
-      handleFeedback () {
-
-      },
-      closeFeedbackDetail () {
-        this.selectScale = {};
-      },
-      selectChange (selection) {
-        console.log(selection);
-        this.selectScales = selection;
-      },
-      pageChange (pageNumber) {
-        this.pageNumber = pageNumber - 1;
-        this.search();
-      },
-      removeFeedbackDetail () {
-        const _this = this;
-        this.$Modal.confirm({
-          title: '删除确认',
-          content: '确定删除该反馈吗？',
-          onOk () {
-            // do del
-            _this.$Message.success('删除成功');
-          }
-        });
-      },
-      selectTabsChange () {
-        this.closeFeedbackDetail();
-        this.analyzedData = {};
-        this.$refs.analyze.setAnalyzeData();
-        setTimeout(() => {
-          this.analyzedData = AnalyseResult;
-        }, 100);
-      }
-    },
-    created () {
-
-    },
-    mounted () {
-      document.body.addEventListener('click', () => {
-        this.closeFeedbackDetail();
-      });
+        }
+      ],
+      loading: false
     }
-  };
+  },
+  methods: {
+
+    dbClick (data) {
+      this.showAnalyzeView(data)
+    },
+    showAnalyzeView (data) {
+      this.selectScale = data
+    },
+    exportToImage () {
+      const vm = this
+      html2canvas(document.querySelector('#capture', {
+        allowTaint: true,
+        useCORS: true
+      })).then(canvas => {
+        const url = canvas.toDataURL()
+        document.getElementById('exportedImage').src = url
+        let a = document.createElement('a')
+        a.href = url
+        a.download = vm.imageName ? vm.imageName : '未命名'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+      })
+    },
+    printFeedbackDetail () {
+      const printHtml = document.getElementById('form-feedback-detail').innerHTML
+      const wind = window.open('/index.html#/print', 'newwindow', 'toolbar=no, menubar=no, scrollbars=no, resizable=no,location=no, status=no')
+      setTimeout(() => {
+        wind.document.body.innerHTML = printHtml
+        wind.print()
+      }, 300)
+      return false
+    },
+    handleFeedback () {
+
+    },
+    closeFeedbackDetail () {
+      this.selectScale = {}
+    },
+    selectChange (selection) {
+      console.log(selection)
+      this.selectScales = selection
+    },
+    pageChange (pageNumber) {
+      this.pageNumber = pageNumber - 1
+      this.search()
+    },
+    removeFeedbackDetail () {
+      const _this = this
+      this.$Modal.confirm({
+        title: '删除确认',
+        content: '确定删除该反馈吗？',
+        onOk () {
+          // do del
+          _this.$Message.success('删除成功')
+        }
+      })
+    },
+    selectTabsChange () {
+      this.closeFeedbackDetail()
+      this.analyzedData = {}
+      this.$refs.analyze.setAnalyzeData()
+      setTimeout(() => {
+        this.analyzedData = AnalyseResult
+      }, 100)
+    }
+  },
+  created () {
+    const list = JSON.parse(localStorage.getItem('form-list') || '[]')
+    this.scaleList = [...list, ...this.scaleList]
+  },
+  mounted () {
+    document.body.addEventListener('click', () => {
+      this.closeFeedbackDetail()
+    })
+  }
+}
 </script>
 <style>
   .form-result-header{
@@ -211,5 +213,3 @@
   }
 
 </style>
-
-

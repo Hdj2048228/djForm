@@ -137,7 +137,12 @@ export default {
     },
     saveForm () {
       console.log(JSON.stringify(this.form));
-
+      const id = parseInt( Math.random() *1000000)
+      const item = {name:'新建表单', time: '2022-08-14', id, forms: this.form }
+      const strForm = item
+      const list  = JSON.parse(localStorage.getItem('form-list'))|| []
+      list.unshift(strForm)
+      localStorage.setItem('form-list',JSON.stringify(list))
       if (this.categoryId === '') {
         this.$Message.error('表单类型为空，请返回上一页面，选择表单类型');
         return;
@@ -147,6 +152,7 @@ export default {
         this.$Message.error('请输入表单标题');
         return;
       }
+      this.$Message.success('保存成功');
       const data = {
         name: this.form.title,
         categoryId: this.categoryId,

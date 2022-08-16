@@ -11,6 +11,12 @@
 
 > form builder
 
+## 图示
+### 编辑页面
+![编辑页面](img.png)
+### 分析图表页面（针对图用户提交的数据查看选项分布）
+![分析图表页面](anylaze.png)
+
 ## Build Setup
 
 ``` bash
