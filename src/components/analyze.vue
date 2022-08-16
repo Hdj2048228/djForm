@@ -27,7 +27,7 @@
           <Button type="ghost" size="small" @click="printFeedbackDetail">打印</Button>
         </div>
         <div id="form-feedback-detail" class="form-result-content">
-          <form-feedback-detail id="capture" ref="image"></form-feedback-detail>
+          <form-feedback-detail id="capture" :form="selectDetailsForm" ref="image"></form-feedback-detail>
         </div>
         <div class="form-result-footer">
           <img id="exportedImage" style="width: 0px;height: 0px;" />
@@ -65,7 +65,7 @@ export default {
       selectScales: [],
       addScaleTypeModal: false,
       selectScale: {},
-      scaleList: [{id: '01', name: '程序员满意度问卷', time: '2022-08-10'}, {id: '01', name: '程序员满意度问卷', time: '2022-08-10'}],
+      scaleList: [{id: '01', name: '我是默认的表单（占位用）', time: '2022-08-10'}, {id: '01', name: '我是默认的表单（占位用）', time: '2022-08-10'}],
       cloumns: [
         {
           title: '序号',
@@ -107,6 +107,23 @@ export default {
         }
       ],
       loading: false
+    }
+  },
+  computed: {
+    selectDetailsForm () {
+      const {title, id} = this.selectScale
+      const result = this.selectScale.forms && this.selectScale.forms.pages[0].elements.map(item => {
+        item.type = item.elementType
+        item.type === 'FormUpload'
+          ? item.value = 'http://img2.imgtn.bdimg.com/it/u=3588772980,2454248748&fm=27&gp=0.jpg'
+          : item.value = '我是结果'
+        return item
+      })
+      return {
+        title,
+        id,
+        result
+      }
     }
   },
   methods: {
